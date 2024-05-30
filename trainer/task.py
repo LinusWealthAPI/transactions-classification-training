@@ -1,5 +1,6 @@
 import re
 import pandas as pd
+from sklearn.feature_selection import SelectKBest, chi2
 from sklearn.model_selection import train_test_split
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.linear_model import LogisticRegression
@@ -9,6 +10,7 @@ import joblib
 import os
 from datetime import datetime
 import pytz
+from sklearn.preprocessing import MaxAbsScaler
 
 # Load training data
 df = pd.read_csv("/gcs/transaction_classification_frankfurt/training_data/data.csv")
@@ -33,9 +35,14 @@ X_train, X_test, y_train, y_test = train_test_split(
 )
 
 # Create model Pipeline
+num_features_to_select = 8000  # Adjust this number based on your dataset and experimentation
+
+# Create model Pipeline with manual feature selection and adjusted regularization strength
 model = Pipeline([
     ('count_vectorizer', CountVectorizer()),
-    ('clf', LogisticRegression(max_iter=1000))
+    ('select_k_best', SelectKBest(score_func=chi2, k=num_features_to_select)),  # Manual feature selection
+    ('scaler', MaxAbsScaler()),  # Scale features
+    ('clf', LogisticRegression(penalty='l2', C=0.2, max_iter=1000))  # Adjust regularization strength
 ])
 
 # Fit training data
