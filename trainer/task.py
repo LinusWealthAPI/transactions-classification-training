@@ -40,9 +40,9 @@ num_features_to_select = 8000  # Adjust this number based on your dataset and ex
 # Create model Pipeline with manual feature selection and adjusted regularization strength
 model = Pipeline([
     ('count_vectorizer', CountVectorizer()),
-    ('select_k_best', SelectKBest(score_func=chi2, k=num_features_to_select)),  # Manual feature selection
-    ('scaler', MaxAbsScaler()),  # Scale features
-    ('clf', LogisticRegression(penalty='l2', C=0.2, max_iter=1000))  # Adjust regularization strength
+    ('select_k_best', SelectKBest(score_func=chi2, k=num_features_to_select)),
+    ('scaler', MaxAbsScaler()),
+    ('clf', LogisticRegression(penalty='l2', C=0.2, max_iter=1000))
 ])
 
 # Fit training data
