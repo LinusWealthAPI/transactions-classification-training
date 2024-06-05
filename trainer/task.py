@@ -11,9 +11,14 @@ import os
 from datetime import datetime
 import pytz
 from sklearn.preprocessing import MaxAbsScaler
+from dotenv import load_dotenv
+
+
+load_dotenv()
 
 # Load training data
-df = pd.read_csv("/gcs/transaction_classification_frankfurt/training_data/data.csv")
+training_data_path = os.getenv('TRAINING_DATA_PATH')
+df = pd.read_csv(training_data_path)
 
 # Preprocess 
 df['counterpart_name'] = df['counterpart_name'].fillna('')
@@ -64,7 +69,8 @@ end_time = datetime.now(tz=pytz.timezone("Europe/Berlin"))
 
 time_delta = end_time - start_time
 
-directory_path = f"/gcs/transaction_classification_frankfurt/training_output/model_{start_time.strftime('%d.%m.%Y_%H:%M:%S')}"
+output_location = os.getenv('OUTPUT_LOCATION')
+directory_path = os.path.join(output_location, f"model_{start_time.strftime('%d.%m.%Y_%H:%M:%S')}")
 
 os.makedirs(directory_path)
 
