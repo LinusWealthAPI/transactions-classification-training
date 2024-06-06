@@ -1,5 +1,6 @@
 import re
 import pandas as pd
+from sklearn.compose import ColumnTransformer
 from sklearn.feature_selection import SelectKBest, chi2
 from sklearn.model_selection import train_test_split
 from sklearn.feature_extraction.text import CountVectorizer
@@ -28,10 +29,11 @@ df["data"] = df["counterpart_name"] + " " + df["purpose"]
 def remove_numbers(text):
     return re.sub(r'\d+', '', text)
 
-df["data"] = df["data"].apply(remove_numbers)
+df["counterpart_name"] = df["counterpart_name"].apply(remove_numbers)
+df["purpose"] = df["purpose"].apply(remove_numbers)
 
 # Select training data
-X = df["data"]
+X = df[["counterpart_name", "purpose"]]
 y = df["category"]
 
 # Train-test-split
@@ -42,9 +44,18 @@ X_train, X_test, y_train, y_test = train_test_split(
 # Create model Pipeline
 num_features_to_select = 8000  # Adjust this number based on your dataset and experimentation
 
+# Column Transformer to apply separate transformations to each column
+preprocessor = ColumnTransformer(
+    transformers=[
+        ('counterpart_name', CountVectorizer(), 'counterpart_name'),
+        ('purpose', CountVectorizer(), 'purpose')
+    ],
+    remainder='drop'
+)
+
 # Create model Pipeline with manual feature selection and adjusted regularization strength
 model = Pipeline([
-    ('count_vectorizer', CountVectorizer()),
+    ('preprocessor', preprocessor),
     ('select_k_best', SelectKBest(score_func=chi2, k=num_features_to_select)),
     ('scaler', MaxAbsScaler()),
     ('clf', LogisticRegression(penalty='l2', C=0.2, max_iter=1000))
